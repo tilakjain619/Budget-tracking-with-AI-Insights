@@ -5,6 +5,7 @@
 
 :root {
   --background: #111827;
+  --background-light: #282c36;
   --foreground: #ecebeb;
 }
 
@@ -12,4 +13,8 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: 'Poppins', sans-serif;
+}
+input{
+  color: var(--foreground);
+  background-color: var(--background-light);
 }

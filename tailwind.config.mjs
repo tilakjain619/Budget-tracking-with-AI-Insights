@@ -12,6 +12,9 @@ export default {
     			background: 'var(--background)',
     			foreground: 'var(--foreground)'
     		},
+			backgroundImage: {
+				'main-header': "url('/main-header.png')"
+			  },
     		keyframes: {
     			marquee: {
     				from: {

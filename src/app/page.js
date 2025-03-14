@@ -15,13 +15,13 @@ const Home = () => {
               Track your budget & expenses
             </h2>
             <p className="text-gray-300 text-sm sm:text-lg">Experience next-generation budget management with AI-driven insights and predictive analytics.</p>
-            <Link className="block rounded-lg w-fit px-5 py-3 bg-gradient-to-r from-purple-800 to-purple-600" href="#">Start for Free</Link>
+            <Link className="block rounded-lg w-fit px-5 py-3 bg-gradient-to-r from-purple-800 to-purple-600" href="/signup">Start for Free</Link>
           </div>
         </div>
-        <img src="./main-header.png" className="sm:mt-0 w-full h-40 sm:h-full object-cover object-center sm:w-4/12 rounded-lg" alt="Dashboard Pic" />
+        <img src="./main-header.png" className="sm:mt-0 hidden sm:block w-full h-40 sm:h-full object-cover object-center sm:w-4/12 rounded-lg" alt="Dashboard Pic" />
       </section>
-      <section className="sm:mt-12 sm:min-h-80 md:min-h-96">
-        <div className="text-center grid gap-2 sm:gap-4 text-balance">
+      <section className="sm:mt-12 mt-2 sm:min-h-80 md:min-h-96">
+        <div className="text-center md:max-w-3xl md:mx-auto grid gap-2 sm:gap-4 text-balance">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-300">Powerful Features for Your Financial Success</h2>
           <p className="text-gray-300 text-sm sm:text-lg">Experience next-generation budget management with AI-driven insights, predictive analytics, and automated tracking.</p>
         </div>
@@ -73,7 +73,7 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="mt-10 sm:min-h-80 md:min-h-[500px] grid items-center gap-4">
+      <section className="mt-20 max-w-7xl mx-auto md:mt-10 sm:min-h-80 md:min-h-[500px] grid items-center gap-4">
       <div className="text-center grid gap-2 sm:gap-4 text-balance">
           <h2 className="text-2xl text-gray-300 md:text-3xl font-bold">Loved by Users Worldwide</h2>
           <p className="text-gray-300 text-sm sm:text-lg">See what our community has to say about their experience with SmartBudget.</p>
