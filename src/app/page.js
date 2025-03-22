@@ -76,7 +76,7 @@ const Home = () => {
       <section className="mt-20 max-w-7xl mx-auto md:mt-10 sm:min-h-80 md:min-h-[500px] grid items-center gap-4">
       <div className="text-center grid gap-2 sm:gap-4 text-balance">
           <h2 className="text-2xl text-gray-300 md:text-3xl font-bold">Loved by Users Worldwide</h2>
-          <p className="text-gray-300 text-sm sm:text-lg">See what our community has to say about their experience with SmartBudget.</p>
+          <p className="text-gray-300 text-sm sm:text-lg">See what our community has to say about their experience with SmartTrack.</p>
         <Reviews/>
         </div>
       </section>

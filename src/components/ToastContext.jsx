@@ -21,7 +21,7 @@ export const ToastProvider = ({ children }) => {
     // Automatically hide after 3 seconds
     setTimeout(() => {
       setToast({ message: "", type: "", isVisible: false });
-    }, 4000);
+    }, 3000);
   };
 
   return (

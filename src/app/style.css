@@ -8,6 +8,10 @@
 button{
     cursor: pointer;
     outline: none;
+    transition: .1s;
+}
+button:hover{
+  opacity: .8;
 }
 input, textarea, select, option{
     outline: none;
@@ -19,3 +23,34 @@ a{
 li{
     list-style: none;
 }
+
+@keyframes fadeInScale {
+    0% {
+      opacity: 0;
+      scale: 0.8;
+    }
+    100% {
+      opacity: 1;
+      scale: 1;
+    }
+  }
+  
+  @keyframes fadeOutScale {
+    0% {
+      opacity: 1;
+      scale: 1;
+    }
+    100% {
+      opacity: 0;
+      scale: 0.8;
+    }
+  }
+  
+  .popup-enter {
+    animation: fadeInScale 0.3s ease-out forwards;
+  }
+  
+  .popup-exit {
+    animation: fadeOutScale 0.3s ease-in forwards;
+  }
+  

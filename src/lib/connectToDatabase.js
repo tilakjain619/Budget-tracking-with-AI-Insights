@@ -1,7 +1,5 @@
 import mongoose from "mongoose";
 const MONGODB_URI = process.env.NEXT_PUBLIC_MONGODB_URI;
-console.log("MongoDB URI:", MONGODB_URI);
-
 if (!MONGODB_URI) {
   throw new Error("Mongo URI Not Found. Ensure it is set in .env");
   // console.log("error");

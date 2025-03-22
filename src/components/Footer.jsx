@@ -9,21 +9,18 @@ const Footer = () => {
         <Link href="/">
          <img src="./logo.png" alt="Logo" className='w-20'/>
         </Link>
-        <ul className="flex flex-col sm:flex-row items-center gap-5 sm:gap-12">
+        <ul className="flex flex-wrap text-sm sm:text-lg items-center gap-3 sm:gap-12">
           <li><a href="jaascript:;"
-              className="text-lg font-normal text-gray-300 transition-all duration-200 hover:text-indigo-600 focus-within:text-indigo-600 focus-within:outline-0">SmartTrack</a>
+              className="font-normal text-gray-400 transition-all duration-100 hover:text-purple-600 focus-within:text-purple-600 focus-within:outline-0">SmartTrack</a>
           </li>
           <li><a href="jaascript:;"
-              className="text-lg font-normal text-gray-300 transition-all duration-200 hover:text-indigo-600 focus-within:text-indigo-600 focus-within:outline-0">Products</a>
+              className="font-normal text-gray-400 transition-all duration-100 hover:text-purple-600 focus-within:text-purple-600 focus-within:outline-0">Products</a>
           </li>
           <li><a href="jaascript:;"
-              className="text-lg font-normal text-gray-300 transition-all duration-200 hover:text-indigo-600 focus-within:text-indigo-600 focus-within:outline-0">Resources</a>
+              className="font-normal text-gray-400 transition-all duration-100 hover:text-purple-600 focus-within:text-purple-600 focus-within:outline-0">Blogs</a>
           </li>
           <li><a href="jaascript:;"
-              className="text-lg font-normal text-gray-300 transition-all duration-200 hover:text-indigo-600 focus-within:text-indigo-600 focus-within:outline-0">Blogs</a>
-          </li>
-          <li><a href="jaascript:;"
-              className="text-lg font-normal text-gray-300 transition-all duration-200 hover:text-indigo-600 focus-within:text-indigo-600 focus-within:outline-0">Support</a>
+              className="font-normal text-gray-400 transition-all duration-100 hover:text-purple-600 focus-within:text-purple-600 focus-within:outline-0">Support</a>
           </li>
         </ul>
       </div>

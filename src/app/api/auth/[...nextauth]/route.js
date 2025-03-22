@@ -26,7 +26,7 @@ export const authOptions = {
           throw new Error("Incorrect password");
         }
 
-        return { id: user._id, name: user.name, email: user.email };
+        return { id: user._id, name: user.name, email: user.email, currency: user.currency, monthly_income: user.monthly_income };
       },
     }),
   ],
@@ -38,22 +38,24 @@ export const authOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.name = user.name;
+        token.email = user.email;
+        token.currency = user.currency;
+        token.monthly_income = user.monthly_income;
       }
       return token;
     },
     async session({ session, token }) {
       session.user.id = token.id;
+      session.user.name = token.name;
+      session.user.email = token.email;
+      session.user.currency = token.currency;
+      session.user.monthly_income = token.monthly_income;
       return session;
     },
   },
 };
 
-export default NextAuth(authOptions);
+const handler = NextAuth(authOptions);
 
-export async function GET(req, res) {
-  return NextAuth(req, res, authOptions);
-}
-
-export async function POST(req, res) {
-  return NextAuth(req, res, authOptions);
-}
+export { handler as GET, handler as POST }; // Fix API route

@@ -31,11 +31,20 @@ export default {
     				to: {
     					transform: 'translateY(calc(-100% - var(--gap)))'
     				}
-    			}
+    			},
+				'progress-in':{
+					from:{
+						translate: '-100% 0'
+					},
+					to:{
+						translate: '0 0'
+					}
+				}
     		},
     		animation: {
     			marquee: 'marquee var(--duration) infinite linear',
-    			'marquee-vertical': 'marquee-vertical var(--duration) linear infinite'
+    			'marquee-vertical': 'marquee-vertical var(--duration) linear infinite',
+				'progress-bar': 'progress-in .8s 1'
     		}
     	}
     },
