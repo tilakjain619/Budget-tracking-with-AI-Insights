@@ -36,6 +36,11 @@ const UserSchema = new mongoose.Schema(
       default: 0,
       min: [0, "Monthly income cannot be negative"], // Validation for minimum value
     },
+    savings_goal: {
+      type: Number,
+      default: 0,
+      min: [0, "Saving Goal cannot be negative"], // Validation for minimum value
+    },
   },
   {
     timestamps: true, // Automatically adds `createdAt` and `updatedAt` fields

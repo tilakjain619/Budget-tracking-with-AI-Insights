@@ -8,19 +8,19 @@ export async function PUT(req) {
     const userId = searchParams.get('userId');
     if (!userId) return NextResponse.json({ message: "User ID is required" }, { status: 400 });
     try {
-        const { monthly_income } = await req.json();
+        const { monthly_income, savings_goal } = await req.json();
         const existingUser = await User.findById(userId);
         if (!existingUser) {
             return NextResponse.json({ message: "User not found" }, { status: 404 });
         }
 
         await User.findByIdAndUpdate(userId, {
-            monthly_income
+            monthly_income, savings_goal
         }, { new: true });
-        return NextResponse.json({ message: "Monthly Income Updated" }, { status: 200 });
+        return NextResponse.json({ message: "Profile Updated" }, { status: 200 });
 
     } catch (error) {
-        return NextResponse({ error: "Something went wrong while updating the Expense" }, { status: 400 });
+        return NextResponse({ error: "Something went wrong while updating" }, { status: 400 });
 
     }
 }
