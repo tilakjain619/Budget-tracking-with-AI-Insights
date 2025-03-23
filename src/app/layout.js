@@ -7,8 +7,8 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { ToastProvider } from "@/components/ToastContext";
 
 export const metadata = {
-  title: "Budget Tracking App with AI Insights",
-  description: "Desc by Budget Tracking App with AI Insights",
+  title: "SmartTrack - Budget Tracking with AI Insights",
+  description: "Experience next-generation budget management with AI-driven insights and predictive analytics",
 };
 
 export default async function RootLayout({ children }) {

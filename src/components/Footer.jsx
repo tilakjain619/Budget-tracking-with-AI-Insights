@@ -9,7 +9,7 @@ const Footer = () => {
         <Link href="/">
          <img src="./logo.png" alt="Logo" className='w-20'/>
         </Link>
-        <ul className="flex flex-wrap text-sm sm:text-lg items-center gap-3 sm:gap-12">
+        <ul className="flex flex-wrap text-sm sm:text-base items-center gap-3 sm:gap-12">
           <li><a href="jaascript:;"
               className="font-normal text-gray-400 transition-all duration-100 hover:text-purple-600 focus-within:text-purple-600 focus-within:outline-0">SmartTrack</a>
           </li>

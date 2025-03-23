@@ -1,6 +1,6 @@
 export const metadata = {
-  title: "Dashboard - SmartTrack",
-  description: "Access AI Insights, predictions, goals, and many more with SmartTrack Dashboard",
+  title: "Expenses - SmartTrack",
+  description: "Manage your expenses, track categories, goals, etc with SmartTrack",
 };
 
 const Layout = ({ children }) => {

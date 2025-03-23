@@ -1,6 +1,7 @@
 "use client";
 import BudgetForm from '@/components/BudgetForm';
 import BudgetProgress from '@/components/BudgetProgress';
+import RecentTransactions from '@/components/RecentTransactions';
 import { useToast } from '@/components/ToastContext';
 import useAuthStore from '@/store/authStore';
 import useProfileStore from '@/store/profileStore';
@@ -77,6 +78,9 @@ const Budget = () => {
                 <section className='mt-8 grid gap-4'>
                     <div>
                         <BudgetProgress userId={userId}/>
+                    </div>
+                    <div>
+                        <RecentTransactions/>
                     </div>
                     <div className='bg-gray-800 overflow-x-auto rounded-xl'>
                         <h2 className='px-5 py-4 font-bold text-lg text-gray-300'>Budget Details</h2>

@@ -1,109 +1,63 @@
-import mongoose from "mongoose";
-import AIInsight from "@/models/AIInsight";
-import Expense from "@/models/Expense"; // Assuming you have an Expense model
 import { connectToDatabase } from "@/lib/connectToDatabase";
-import OpenAI from "openai";
+import AIInsight from "@/models/AIInsight";
+import { NextResponse } from "next/server";
+
+
+export async function GET(req) {
+    try {
+        await connectToDatabase();
+
+        const { searchParams } = req.nextUrl;
+        const userId = searchParams.get("userId");
+        const month = Number(searchParams.get("month"));
+        const year = Number(searchParams.get("year"));
+
+        console.log("Query Params:", { userId, month, year });
+
+        if (!userId || !month || !year) {
+            return NextResponse.json({ error: "Missing required query parameters" }, { status: 400 });
+        }
+
+        const insights = await AIInsight.findOne({ userId, month, year });
+
+        console.log("Fetched Insights:", insights);
+
+        // ✅ If no insights exist, return an empty object (not 404)
+        if (!insights) {
+            return NextResponse.json({}, { status: 200 });
+        }
+
+        return NextResponse.json(insights, { status: 200 });
+    } catch (error) {
+        console.error("Error fetching AI insights:", error);
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    }
+}
+
 
 export async function POST(req) {
     try {
-        // Ensure database connection
-        await connectToDatabase();
+        await connectToDatabase(); // Ensure DB connection
 
-        const { userId, income, month, year } = await req.json();
+        const { userId, month, year, spendingPattern, unusualSpending, savingTip, predictedExpenseNextMonth } = await req.json();
 
-        if (!userId || !income || !month || !year) {
+        if (!userId || !month || !year || !spendingPattern || !unusualSpending || !savingTip || predictedExpenseNextMonth === undefined) {
             return new Response(JSON.stringify({ message: "Missing required data" }), { status: 400 });
         }
 
-        // Fetch all expenses for the user across multiple budgets
-        const userExpenses = await Expense.find({ userId }).sort({ date: -1 });
-
-        if (!userExpenses.length) {
-            return new Response(JSON.stringify({ message: "No expenses found for user" }), { status: 404 });
-        }
-
-        // Group expenses by category
-        const categorizedExpenses = {};
-        userExpenses.forEach((exp) => {
-            if (!categorizedExpenses[exp.category]) {
-                categorizedExpenses[exp.category] = 0;
-            }
-            categorizedExpenses[exp.category] += exp.amount;
-        });
-
-        const formattedExpenses = Object.entries(categorizedExpenses)
-            .map(([category, amount]) => `- ${category}: $${amount}`)
-            .join("\n");
-
-        // AI Prompt for overall analysis
-        const prompt = `
-        Analyze the following user's **overall financial data** over multiple months:
-        - Monthly Income: $${income}
-        - Expenses:
-        ${formattedExpenses}
-
-        Identify:
-        1. Major spending trends over multiple months.
-        2. Unusual spending patterns.
-        3. Long-term savings opportunities.
-        4. Predict next month's total expenses.
-
-        Format response as:
-        {
-          "spendingTrends": "Your spending trend insights here.",
-          "unusualSpending": "Your unusual spending insights here.",
-          "longTermSavings": "Your long-term savings opportunities here.",
-          "predictedExpenseNextMonth": 1234
-        }
-        `;
-
-        // Initialize OpenAI with AIMLAPI
-        const openAI = new OpenAI({
-            apiKey: `${process.env.AIMLAPI_KEY}`,
-            baseURL: "https://api.aimlapi.com/v1",
-            dangerouslyAllowBrowser: true,
-            headers: { "Authorization": `Bearer ${process.env.AIMLAPI_KEY}` }
-        });
-
-        // Make API call
-        const response = await openAI.chat.completions.create({
-            model: "gpt-3.5-turbo",
-            messages: [
-                {
-                    role: "system",
-                    content: "You are a budget analyser and expenses tracker who suggests, recommends and predicts."
-                },
-                { role: "user", content: prompt }],
-            temperature: 0.5,
-            max_tokens: 50
-        });
-
-        // Log API response
-        console.log("AIMLAPI Response:", response);
-
-        // Parse the response safely
-        let aiResponse;
-        try {
-            aiResponse = JSON.parse(response.choices[0].message.content);
-        } catch (error) {
-            console.error("AI response parsing error:", error);
-            return new Response(JSON.stringify({ message: "Invalid AI response format" }), { status: 500 });
-        }
-
-        // Save AI Insights to MongoDB
         const newAIInsight = await AIInsight.create({
             userId,
             month,
             year,
-            spendingPattern: aiResponse.unusualSpending,
-            spendingTrends: aiResponse.spendingTrends,
-            savingTip: aiResponse.longTermSavings,
-            predictedExpenseNextMonth: aiResponse.predictedExpenseNextMonth,
+            spendingPattern,
+            unusualSpending,
+            savingTip,
+            predictedExpenseNextMonth,
         });
 
-        return new Response(JSON.stringify(newAIInsight), { status: 200 });
+        return new Response(JSON.stringify(newAIInsight), { status: 201 });
     } catch (error) {
-        console.error("Server Error:", error);
-        return new Response(JSON.stringify({ message: "Failed to generate AI insights", error: error.message }), { status: 500 });
+        console.error("Error saving AI insights:", error);
+        return new Response(JSON.stringify({ message: "Failed to save insights", error: error.message }), { status: 500 });
     }
 }

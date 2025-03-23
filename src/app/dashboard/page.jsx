@@ -10,6 +10,7 @@ import TotalBalance from "@/components/TotalBalance";
 import MonthlyExpenses from "@/components/MonthlyExpenses";
 import Savings from "@/components/Savings";
 import AIInsights from "@/components/AIInsights";
+import Loader from "@/components/Extras/Loader";
 
 const Dashboard = () => {
   const { user } = useAuthStore();
@@ -37,7 +38,6 @@ const Dashboard = () => {
           </section>
 
           <AIInsights income={income} month={month} year={year} />
-
           <RecentTransactions/>
         </div>
       ) : (

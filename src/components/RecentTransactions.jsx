@@ -31,7 +31,7 @@ const RecentTransactions = () => {
         }
     }, [profile.id]);
     return (
-        <section className="mt-6 md:mt-8 py-4 lg:mx-1">
+        <section className="mt-4 md:mt-5 py-4 lg:mx-1">
             <div className="flex justify-between gap-1">
                 <h2 className="text-base font-bold sm:text-lg text-gray-300">Recent Transactions</h2>
                 <div>

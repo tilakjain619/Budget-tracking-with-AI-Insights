@@ -8,8 +8,8 @@ import { useToast } from "@/components/ToastContext";
 import useProfileStore from "@/store/profileStore";
 
 const Login = () => {
-    const [email, setEmail] = useState("tilak@gmail.com");
-    const [password, setPassword] = useState("tilak123");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
     const router = useRouter();
     const { user, setUser } = useAuthStore();
     const { showToast } = useToast();
