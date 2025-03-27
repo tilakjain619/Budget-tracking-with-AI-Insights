@@ -26,7 +26,7 @@ export const authOptions = {
           throw new Error("Incorrect password");
         }
 
-        return { id: user._id, name: user.name, email: user.email, currency: user.currency, monthly_income: user.monthly_income };
+        return { id: user._id, name: user.name, email: user.email, currency: user.currency, monthly_income: user.monthly_income, savings_goal: user.savings_goal };
       },
     }),
   ],
@@ -42,6 +42,7 @@ export const authOptions = {
         token.email = user.email;
         token.currency = user.currency;
         token.monthly_income = user.monthly_income;
+        token.savings_goal = user.savings_goal;
       }
       return token;
     },
@@ -51,6 +52,7 @@ export const authOptions = {
       session.user.email = token.email;
       session.user.currency = token.currency;
       session.user.monthly_income = token.monthly_income;
+      session.user.savings_goal = token.savings_goal;
       return session;
     },
   },

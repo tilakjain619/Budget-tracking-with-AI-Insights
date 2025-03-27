@@ -4,6 +4,7 @@ import axios from 'axios'
 import { useToast } from '@/components/ToastContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Loader from '@/components/Extras/Loader';
 
 const SignUp = () => {
   const [name, setName] = useState('');
@@ -11,10 +12,12 @@ const SignUp = () => {
   const [password, setPassword] = useState('');
   const { showToast } = useToast();
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      setLoading(true);
       const response = await axios.post('/api/auth/signup', { name, email, password });
       setEmail("");
       setName("");
@@ -24,7 +27,10 @@ const SignUp = () => {
         router.push("/login");
       }, 2000)
     } catch (error) {
-      showToast(error.response.data.message, "danger")
+      showToast(error.response.data.message, "danger");
+    }
+    finally{
+      setLoading(false);
     }
   }
 
@@ -65,7 +71,9 @@ const SignUp = () => {
 </svg>
           <p className='text-sm '>By signing up to SmartTrack, I agree to all <span className='text-purple-500 cursor-pointer'>Terms and conditions.</span></p>
         </div>
-        <button className="bg-gradient-to-r px-4 rounded-md py-3 from-purple-800 to-purple-600" type="submit">Sign Up</button>
+        <button className="bg-gradient-to-r flex justify-center gap-2 px-4 rounded-md py-3 from-purple-800 to-purple-600" type="submit">Sign Up
+        {loading && <Loader backgroundColor={"#9333ea"}/>}
+        </button>
         <p className="text-sm md:text-base text-center mt-1 flex items-center gap-1">Already have an account? <Link href="/login" className="text-purple-400 gap-0.5 flex items-center">Signin <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width={17} height={17} fill={"none"}>
     <path d="M16.5 7.5L6 18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
     <path d="M8 6.18791C8 6.18791 16.0479 5.50949 17.2692 6.73079C18.4906 7.95209 17.812 16 17.812 16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />

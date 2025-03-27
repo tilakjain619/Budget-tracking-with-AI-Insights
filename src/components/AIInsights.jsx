@@ -13,8 +13,6 @@ const AIInsights = ({ income, month, year }) => {
         predictedExpenseNextMonth: 0
     });
 
-    console.log(income, month, year, profile?.id);
-
     const saveInsightsToDB = async (insights) => {
         try {
             await axios.post("/api/ai-insights", {
@@ -22,7 +20,7 @@ const AIInsights = ({ income, month, year }) => {
                 month,
                 year,
                 spendingPattern: insights.spendingTrends,
-                unusualSpending: insights.unusualSpending, // 🔥 Now included!
+                unusualSpending: insights.unusualSpending,
                 savingTip: insights.longTermSavings,
                 predictedExpenseNextMonth: insights.predictedExpenseNextMonth,
             });
@@ -31,40 +29,56 @@ const AIInsights = ({ income, month, year }) => {
             console.error("Error saving AI insights:", error);
         }
     };
-    
 
     useEffect(() => {
         if (!profile?.id || !income || !month || !year) return;
-    
+
+        const today = new Date();
+        const is28th = today.getDate() === 28;
+
         let isMounted = true;
 
-        const checkAndFetchAIInsights = async () => {
+        const fetchLastInsights = async () => {
             try {
                 setLoading(true);
-        
-                // Step 1: Check if insights exist in the database
+                const response = await axios.get(`/api/ai-insights?userId=${profile.id}&month=${month}&year=${year}`);
+                if (response.status === 200 && response.data) {
+                    console.log("Using last stored AI insights:", response.data);
+                    if (isMounted) setAiInsights(response.data);
+                }
+            } catch (error) {
+                console.error("Error fetching stored AI insights:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        const generateAIInsights = async () => {
+            try {
+                setLoading(true);
+
+                // Check if insights already exist in the database
                 const response = await axios.get(`/api/ai-insights?userId=${profile.id}&month=${month}&year=${year}`);
                 if (response.status === 200 && response.data && Object.keys(response.data).length > 0) {
                     console.log("Using stored AI insights:", response.data);
                     if (isMounted) setAiInsights(response.data);
                     return;
                 }
-        
+
                 console.log("No existing insights found, generating new insights...");
                 
-                // Step 2: Fetch new insights from OpenAI
                 const openai = new OpenAI({
                     apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
                     dangerouslyAllowBrowser: true,
                 });
-        
+
                 const prompt = `
                 Analyze the following financial details and provide AI-based insights:
                 - User ID: ${profile.id}
                 - Income: ${profile.currency}${income}
                 - Month: ${month}
                 - Year: ${year}
-        
+
                 Provide insights strictly in valid JSON format, keep each response up to 30 words:
                 {
                     "spendingTrends": "Insight about spending trends.",
@@ -73,37 +87,40 @@ const AIInsights = ({ income, month, year }) => {
                     "predictedExpenseNextMonth": 1234
                 }
                 `;
-        
+
                 const aiResponse = await openai.chat.completions.create({
                     model: "gpt-4o-mini",
                     messages: [{ role: "system", content: prompt }],
                     temperature: 0.7
                 });
-        
+
                 let aiMessage = aiResponse.choices[0]?.message?.content?.trim();
                 let aiParsedResponse = {};
-        
+
                 try {
                     aiParsedResponse = JSON.parse(aiMessage);
                 } catch (parseError) {
                     console.error("AI response parsing error:", parseError, "Response:", aiMessage);
                     return;
                 }
-        
+
                 if (isMounted) {
                     setAiInsights(aiParsedResponse);
                     saveInsightsToDB(aiParsedResponse); // Save insights to DB for future reference
                 }
-        
+
             } catch (error) {
                 console.error("Error checking AI insights:", error);
             } finally {
                 setLoading(false);
             }
         };
-        
 
-        checkAndFetchAIInsights();
+        if (is28th) {
+            generateAIInsights();  // Generate insights only on the 28th
+        } else {
+            fetchLastInsights();  // Fetch last stored insights on other days
+        }
 
         return () => {
             isMounted = false;

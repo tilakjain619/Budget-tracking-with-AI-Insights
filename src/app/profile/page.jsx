@@ -7,7 +7,7 @@ import React, { useState } from 'react'
 const Profile = () => {
     const { profile, updateProfile } = useProfileStore();
     const [monthlyIncome, setMonthlyIncome] = useState(profile?.monthly_income);
-    const [savingsGoal, setSavingsGoal] = useState(profile?.savings_goal || 0);
+    const [savingsGoal, setSavingsGoal] = useState(profile?.savings_goal);
     const [editingIncome, setEditingIncome] = useState(false);
     const [editingSavingsGoal, setEditingSavingsGoal] = useState(false);
     const userId = profile?.id;

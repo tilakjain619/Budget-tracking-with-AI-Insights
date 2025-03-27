@@ -130,7 +130,7 @@ const ExpenseForm = ({ showExpenseForm, setShowExpenseForm, userId, expenseToEdi
                             name="description"
                             value={formData.description}
                             onChange={handleChange}
-                            className="w-full p-2 border border-gray-700 mt-2 rounded"
+                            className="w-full p-2 bg-gray-800 border border-gray-700 mt-2 rounded"
                             required
                         />
                     </label>
