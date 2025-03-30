@@ -87,9 +87,9 @@ const BudgetProgress = ({ userId }) => {
           {/* Header */}
           <div className="flex justify-between items-center">
             <h3 className="text-base sm:text-lg font-bold">Monthly Budget</h3>
-            <p className={`text-xs sm:text-sm ${budgetChange >= 0 ? "text-green-400" : "text-red-400"}`}>
+            {/* <p className={`text-xs sm:text-sm ${budgetChange >= 0 ? "text-green-400" : "text-red-400"}`}>
               vs Last Month {budgetChange >= 0 ? "↑" : "↓"} {budgetChange.toFixed(2)}%
-            </p>
+            </p> */}
           </div>
 
           {/* Budget Amount */}

@@ -47,22 +47,6 @@ const UserSchema = new mongoose.Schema(
   }
 );
 
-// Middleware to handle cascade delete
-UserSchema.pre("remove", async function (next) {
-  const userId = this._id;
-
-  // Delete related collections
-  try {
-    await Expense.deleteMany({ userId });
-    await Budget.deleteMany({ userId });
-    await AIInsight.deleteMany({ userId });
-    next();
-  } catch (error) {
-    console.error("Error during cascade delete:", error);
-    next(error);
-  }
-});
-
 // Compile the model or use the existing one
 const User = mongoose.models.User || mongoose.model("User", UserSchema);
 

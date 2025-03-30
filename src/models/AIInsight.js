@@ -1,7 +1,11 @@
 import mongoose from "mongoose";
 
 const AIInsightSchema = new mongoose.Schema({
-    userId: { type: String, required: true },
+    userId:{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            required: true
+        },
     month: { type: Number, required: true },
     year: { type: Number, required: true },
     spendingPattern: { type: String, required: true },

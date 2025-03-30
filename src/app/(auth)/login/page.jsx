@@ -26,7 +26,7 @@ const Login = () => {
         });
 
         if (result?.error) {
-            showToast("Invalid credentials", "warning");
+            showToast("Invalid credentials", "danger");
             setLoading(false);
         } else {
             setUser(result);

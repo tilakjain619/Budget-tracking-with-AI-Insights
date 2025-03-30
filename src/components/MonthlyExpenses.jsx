@@ -45,7 +45,7 @@ const MonthlyExpenses = () => {
 </svg></span>
       </div>
       <h1 className="text-2xl font-bold md:text-3xl">
-        {profile.currency} {loading ? <Loader/> : totalExpenses.toLocaleString()}
+        {profile.currency} {loading ? <div className="w-full grid h-14 items-center justify-center"><Loader/></div> : totalExpenses.toLocaleString()}
       </h1>
 
       {/* Show percentage spent */}

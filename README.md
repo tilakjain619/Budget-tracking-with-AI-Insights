@@ -17,6 +17,7 @@ Many people find it hard to keep track of their expenses and save money. Without
 -   **Real-Time Analytics** – Visual insights into spending habits.
 -   **Multi-Currency Support** – Convert and track expenses in different currencies.
 -   **AI-Powered Insights** – Detect unusual spending patterns and savings opportunities using **GPT-4o Mini**.
+-   **View and Export Report** - Effortlessly generate detailed reports of your financial data, visualize distributions, and export them in PDF.
 -   **Secure Authentication** – Seamless login with **MongoDB authentication via NextAuth**.
 -   **Fast & Responsive UI** – Optimized with **Next.js** for a smooth experience.
 

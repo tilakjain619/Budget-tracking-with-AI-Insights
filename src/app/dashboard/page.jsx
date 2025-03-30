@@ -5,12 +5,13 @@ import useProfileStore from "@/store/profileStore";
 import axios from "axios";
 import Link from "next/link";
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import TotalBalance from "@/components/TotalBalance";
 import MonthlyExpenses from "@/components/MonthlyExpenses";
 import Savings from "@/components/Savings";
 import AIInsights from "@/components/AIInsights";
 import Loader from "@/components/Extras/Loader";
+import ExportReportButton from "@/components/Extras/ExportReportButton";
 
 const Dashboard = () => {
   const { user } = useAuthStore();

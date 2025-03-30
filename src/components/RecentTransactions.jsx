@@ -39,9 +39,7 @@ const RecentTransactions = () => {
                 </div>
             </div>
             {
-                expenseLoading ? <div>
-                    <Loader />
-                </div> :
+                expenseLoading ? <div className="w-full grid h-14 items-center justify-center"><Loader/></div> :
                     <div className='mt-4 grid gap-3 rounded-xl bg-gray-800'>
                         {
                             expenses.map((expense) =>(

@@ -1,17 +1,21 @@
 "use client";
 import { useToast } from '@/components/ToastContext';
+import useAuthStore from '@/store/authStore';
 import useProfileStore from '@/store/profileStore';
 import axios from 'axios';
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react'
 
 const Profile = () => {
-    const { profile, updateProfile } = useProfileStore();
+    const { profile, updateProfile, setProfile } = useProfileStore();
     const [monthlyIncome, setMonthlyIncome] = useState(profile?.monthly_income);
     const [savingsGoal, setSavingsGoal] = useState(profile?.savings_goal);
     const [editingIncome, setEditingIncome] = useState(false);
     const [editingSavingsGoal, setEditingSavingsGoal] = useState(false);
     const userId = profile?.id;
     const { showToast } = useToast();
+    const router = useRouter();
+    const {setUser} = useAuthStore();
 
     // Update Monthly Income
     const handleEditIncome = async (e) => {
@@ -25,7 +29,7 @@ const Profile = () => {
             updateProfile({ monthly_income: monthlyIncome }); // ✅ Update global store
             showToast(response.data.message, "success");
         } catch (error) {
-            showToast("Failed to update monthly income", "error");
+            showToast("Failed to update monthly income", "danger");
         }
 
         setEditingIncome(false);
@@ -43,12 +47,35 @@ const Profile = () => {
             updateProfile({ savings_goal: savingsGoal }); // ✅ Update global store
             showToast(response.data.message, "success");
         } catch (error) {
-            showToast("Failed to update savings goal", "error");
+            showToast("Failed to update savings goal", "danger");
         }
 
         setEditingSavingsGoal(false);
     };
 
+    const handleAccountDelete = async (userId) => {
+        const confirmDelete = confirm(
+            "Are you sure you want to delete your account?\nThis will delete your budgets, expenses, and AI Insights too."
+        );
+        if (confirmDelete) {
+            try {
+                const response = await axios.delete(`/api/profile?userId=${userId}`);
+                showToast(response.data.message, "success");
+                setUser(null);
+                setProfile(null);
+                router.push('/');
+            } catch (error) {
+                const errorMessage =
+                    error.response?.data?.error || "Account cannot be deleted";
+                showToast(errorMessage, "danger");
+                console.error("Error details:", error); // For debugging purposes
+            }
+        } else {
+            showToast("Account deletion canceled", "warning");
+            console.log("User canceled account deletion.");
+        }
+    };
+    
     return (
         <div className='min-h-[80vh] max-w-[500px] mx-auto grid items-center'>
             {profile ? (
@@ -65,10 +92,10 @@ const Profile = () => {
                         <input
                             value={monthlyIncome}
                             onChange={(e) => setMonthlyIncome(e.target.value)}
-                            className={`w-3/5 rounded-lg bg-gray-700 ${editingIncome ? 'opacity-100' : 'opacity-60'} px-3 py-2`} 
+                            className={`w-3/5 rounded-lg bg-gray-700 ${editingIncome ? 'opacity-100' : 'opacity-60'} px-3 py-2`}
                             readOnly={!editingIncome}
                         />
-                        <button 
+                        <button
                             onClick={(e) => {
                                 if (editingIncome) {
                                     handleEditIncome(e);
@@ -76,7 +103,7 @@ const Profile = () => {
                                     e.preventDefault();
                                     setEditingIncome(true);
                                 }
-                            }} 
+                            }}
                             className={`${editingIncome ? 'bg-green-800' : 'bg-gray-700'} w-2/5 text-sm px-3 py-2 rounded-lg`}
                         >
                             {editingIncome ? "Save" : "Update"}
@@ -89,10 +116,10 @@ const Profile = () => {
                         <input
                             value={savingsGoal}
                             onChange={(e) => setSavingsGoal(e.target.value)}
-                            className={`w-3/5 rounded-lg bg-gray-700 ${editingSavingsGoal ? 'opacity-100' : 'opacity-60'} px-3 py-2`} 
+                            className={`w-3/5 rounded-lg bg-gray-700 ${editingSavingsGoal ? 'opacity-100' : 'opacity-60'} px-3 py-2`}
                             readOnly={!editingSavingsGoal}
                         />
-                        <button 
+                        <button
                             onClick={(e) => {
                                 if (editingSavingsGoal) {
                                     handleEditSavingsGoal(e);
@@ -100,7 +127,7 @@ const Profile = () => {
                                     e.preventDefault();
                                     setEditingSavingsGoal(true);
                                 }
-                            }} 
+                            }}
                             className={`${editingSavingsGoal ? 'bg-green-800' : 'bg-gray-700'} w-2/5 text-sm px-3 py-2 rounded-lg`}
                         >
                             {editingSavingsGoal ? "Save" : "Update"}
@@ -108,16 +135,20 @@ const Profile = () => {
                     </form>
 
                     <p className='text-sm text-gray-400 border-t border-gray-500 py-2 mt-2'>
-                        Track with Dashboard! Manage your finances with ease and track your progress all in one place.
+                        <button onClick={() => handleAccountDelete(userId)} className='block bg-red-600 text-gray-300 px-3 py-2 rounded-lg my-1 bg-opacity-65'>Close Account</button>
+                        <span className='pt-1 block'>
+                        Closing your account is permanent and cannot be undone. By proceeding, you will lose access to all your financial tracking data and insights.
+                        </span>
                     </p>
+
                 </div>
             ) : (
                 <div className='px-2 py-3 grid gap-1'>
                     <h2 className='text-lg text-gray-300'>
-                        Something wrong with your profile?
+                        Login to see your profile!
                     </h2>
                     <p className='text-sm text-gray-400 border-t border-gray-500 py-3 my-2'>
-                        Login to SmartTrack! Manage your finances with ease and track your progress all in one place.
+                        Manage your finances with ease and track your progress all in one place.
                     </p>
                 </div>
             )}

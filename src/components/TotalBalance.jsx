@@ -49,7 +49,7 @@ const TotalBalance = () => {
 </svg></span>
       </div>
       <h1 className="text-2xl font-bold md:text-3xl">
-        {profile.currency} {loading ? <Loader/> : totalBalance.toLocaleString()}
+        {profile.currency} {loading ? <div className="w-full grid h-14 items-center justify-center"><Loader/></div> : totalBalance.toLocaleString()}
       </h1>
 
       {/* Show Money Left or Overdue */}

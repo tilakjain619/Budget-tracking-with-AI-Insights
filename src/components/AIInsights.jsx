@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import useProfileStore from "@/store/profileStore";
 import OpenAI from "openai";
 import axios from "axios";
+import Loader from "./Extras/Loader";
 
 const AIInsights = ({ income, month, year }) => {
     const { profile } = useProfileStore();
@@ -147,7 +148,7 @@ const AIInsights = ({ income, month, year }) => {
             </div>
 
             {loading ? (
-                <p className="text-gray-400 mt-4">Generating insights...</p>
+                <div className="w-full grid h-14 items-center justify-center"><Loader/></div>
             ) : (
                 <div className="flex flex-wrap gap-3 mt-4">
                     <div className="w-full sm:w-[49%] px-4 py-3 bg-gray-900 rounded-xl">
