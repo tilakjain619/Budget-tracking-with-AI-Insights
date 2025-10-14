@@ -48,7 +48,7 @@ Many people find it hard to keep track of their expenses and save money. Without
     ```
     NEXT_PUBLIC_MONGODB_URI=mongodb://localhost:27017/budget-tracker
     NEXTAUTH_SECRET=your_secret_key
-    NEXT_PUBLIC_OPENAI_API_KEY=your_openai_api_key
+    NEXT_PUBLIC_OPENROUTER_API_KEY=your_api_key
     ```
     
 4.  Start the development server:

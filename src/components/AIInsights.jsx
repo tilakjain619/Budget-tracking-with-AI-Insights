@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import useProfileStore from "@/store/profileStore";
-import OpenAI from "openai";
 import axios from "axios";
 import Loader from "./Extras/Loader";
 
 const AIInsights = ({ income, month, year }) => {
     const { profile } = useProfileStore();
     const [loading, setLoading] = useState(true);
+    const [hasInsightsToday, setHasInsightsToday] = useState(false);
     const [aiInsights, setAiInsights] = useState({
         spendingTrends: "",
         unusualSpending: "",
@@ -14,10 +14,13 @@ const AIInsights = ({ income, month, year }) => {
         predictedExpenseNextMonth: 0
     });
 
+    // Get current day
+    const currentDay = new Date().getDate();
     const saveInsightsToDB = async (insights) => {
         try {
             await axios.post("/api/ai-insights", {
                 userId: profile.id,
+                day: currentDay,
                 month,
                 year,
                 spendingPattern: insights.spendingTrends,
@@ -30,57 +33,54 @@ const AIInsights = ({ income, month, year }) => {
             console.error("Error saving AI insights:", error);
         }
     };
+    let isMounted = true;
 
-    useEffect(() => {
-        if (!profile?.id || !income || !month || !year) return;
-
-        const today = new Date();
-        const is28th = today.getDate() === 28;
-
-        let isMounted = true;
-
-        const fetchLastInsights = async () => {
-            try {
-                setLoading(true);
-                const response = await axios.get(`/api/ai-insights?userId=${profile.id}&month=${month}&year=${year}`);
-                if (response.status === 200 && response.data) {
-                    console.log("Using last stored AI insights:", response.data);
-                    if (isMounted) setAiInsights(response.data);
+    const fetchLastInsights = async () => {
+        try {
+            setLoading(true);
+            const response = await axios.get(`/api/ai-insights?userId=${profile.id}&day=${currentDay}&month=${month}&year=${year}`);
+            if (response.status === 200 && response.data && Object.keys(response.data).length > 0) {
+                console.log("Using last stored AI insights:", response.data);
+                if (isMounted) {
+                    setAiInsights(response.data);
+                    setHasInsightsToday(true);
                 }
-            } catch (error) {
-                console.error("Error fetching stored AI insights:", error);
-            } finally {
-                setLoading(false);
+            } else {
+                setHasInsightsToday(false);
             }
-        };
+        } catch (error) {
+            console.error("Error fetching stored AI insights:", error);
+            setHasInsightsToday(false);
+        } finally {
+            setLoading(false);
+        }
+    };
 
         const generateAIInsights = async () => {
             try {
                 setLoading(true);
 
                 // Check if insights already exist in the database
-                const response = await axios.get(`/api/ai-insights?userId=${profile.id}&month=${month}&year=${year}`);
+                const response = await axios.get(`/api/ai-insights?userId=${profile.id}&day=${currentDay}&month=${month}&year=${year}`);
                 if (response.status === 200 && response.data && Object.keys(response.data).length > 0) {
                     console.log("Using stored AI insights:", response.data);
-                    if (isMounted) setAiInsights(response.data);
+                    if (isMounted) {
+                        setAiInsights(response.data);
+                        setHasInsightsToday(true);
+                    }
                     return;
                 }
 
                 console.log("No existing insights found, generating new insights...");
-                
-                const openai = new OpenAI({
-                    apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
-                    dangerouslyAllowBrowser: true,
-                });
 
-                const prompt = `
+            const prompt = `
                 Analyze the following financial details and provide AI-based insights:
                 - User ID: ${profile.id}
                 - Income: ${profile.currency}${income}
                 - Month: ${month}
                 - Year: ${year}
 
-                Provide insights strictly in valid JSON format, keep each response up to 30 words:
+                Don't give any markdown syntax. Provide insights strictly in valid JSON format, keep each response up to 30 words:
                 {
                     "spendingTrends": "Insight about spending trends.",
                     "unusualSpending": "Insight about unusual spending.",
@@ -89,39 +89,57 @@ const AIInsights = ({ income, month, year }) => {
                 }
                 `;
 
-                const aiResponse = await openai.chat.completions.create({
-                    model: "gpt-4o-mini",
-                    messages: [{ role: "system", content: prompt }],
-                    temperature: 0.7
-                });
+            const aiResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${process.env.NEXT_PUBLIC_OPENROUTER_API_KEY}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    "model": "openai/gpt-oss-20b:free",
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": prompt
+                        }
+                    ],
+                    "temperature": 0.7
+                })
+            });
 
-                let aiMessage = aiResponse.choices[0]?.message?.content?.trim();
-                let aiParsedResponse = {};
-
-                try {
-                    aiParsedResponse = JSON.parse(aiMessage);
-                } catch (parseError) {
-                    console.error("AI response parsing error:", parseError, "Response:", aiMessage);
-                    return;
-                }
-
-                if (isMounted) {
-                    setAiInsights(aiParsedResponse);
-                    saveInsightsToDB(aiParsedResponse); // Save insights to DB for future reference
-                }
-
-            } catch (error) {
-                console.error("Error checking AI insights:", error);
-            } finally {
-                setLoading(false);
+            if (!aiResponse.ok) {
+                throw new Error(`OpenRouter API error: ${aiResponse.status}`);
             }
-        };
 
-        if (is28th) {
-            generateAIInsights();  // Generate insights only on the 28th
-        } else {
-            fetchLastInsights();  // Fetch last stored insights on other days
+            const aiData = await aiResponse.json();
+            let aiMessage = aiData.choices[0]?.message?.content?.trim();
+            let aiParsedResponse = {};
+
+            try {
+                aiParsedResponse = JSON.parse(aiMessage);
+            } catch (parseError) {
+                console.error("AI response parsing error:", parseError, "Response:", aiMessage);
+                return;
+            }
+
+            if (isMounted) {
+                setAiInsights(aiParsedResponse);
+                setHasInsightsToday(true);
+                saveInsightsToDB(aiParsedResponse); // Save insights to DB for future reference
+            }
+
+        } catch (error) {
+            console.error("Error checking AI insights:", error);
+        } finally {
+            setLoading(false);
         }
+    };
+
+    useEffect(() => {
+        if (!profile?.id || !income || !month || !year) return;
+
+
+        fetchLastInsights();  // Fetch last stored insights on other days
 
         return () => {
             isMounted = false;
@@ -132,28 +150,36 @@ const AIInsights = ({ income, month, year }) => {
 
     return (
         <section className="mt-6 px-4 py-4 bg-gray-800 border border-gray-700 rounded-xl">
-            <div className="flex gap-2 items-center">
-                <span className="px-3 py-3 bg-purple-500 rounded-lg bg-opacity-80">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width={20} height={20} fill={"none"}>
-    <path d="M14 12.6483L16.3708 10.2775C16.6636 9.98469 16.81 9.83827 16.8883 9.68032C17.0372 9.3798 17.0372 9.02696 16.8883 8.72644C16.81 8.56849 16.6636 8.42207 16.3708 8.12923C16.0779 7.83638 15.9315 7.68996 15.7736 7.61169C15.473 7.46277 15.1202 7.46277 14.8197 7.61169C14.6617 7.68996 14.5153 7.83638 14.2225 8.12923L11.8517 10.5M14 12.6483L5.77754 20.8708C5.4847 21.1636 5.33827 21.31 5.18032 21.3883C4.8798 21.5372 4.52696 21.5372 4.22644 21.3883C4.06849 21.31 3.92207 21.1636 3.62923 20.8708C3.33639 20.5779 3.18996 20.4315 3.11169 20.2736C2.96277 19.973 2.96277 19.6202 3.11169 19.3197C3.18996 19.1617 3.33639 19.0153 3.62923 18.7225L11.8517 10.5M14 12.6483L11.8517 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M19.5 2.5L19.3895 2.79873C19.2445 3.19044 19.172 3.38629 19.0292 3.52917C18.8863 3.67204 18.6904 3.74452 18.2987 3.88946L18 4L18.2987 4.11054C18.6904 4.25548 18.8863 4.32796 19.0292 4.47083C19.172 4.61371 19.2445 4.80956 19.3895 5.20127L19.5 5.5L19.6105 5.20127C19.7555 4.80956 19.828 4.61371 19.9708 4.47083C20.1137 4.32796 20.3096 4.25548 20.7013 4.11054L21 4L20.7013 3.88946C20.3096 3.74452 20.1137 3.67204 19.9708 3.52917C19.828 3.38629 19.7555 3.19044 19.6105 2.79873L19.5 2.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-    <path d="M19.5 12.5L19.3895 12.7987C19.2445 13.1904 19.172 13.3863 19.0292 13.5292C18.8863 13.672 18.6904 13.7445 18.2987 13.8895L18 14L18.2987 14.1105C18.6904 14.2555 18.8863 14.328 19.0292 14.4708C19.172 14.6137 19.2445 14.8096 19.3895 15.2013L19.5 15.5L19.6105 15.2013C19.7555 14.8096 19.828 14.6137 19.9708 14.4708C20.1137 14.328 20.3096 14.2555 20.7013 14.1105L21 14L20.7013 13.8895C20.3096 13.7445 20.1137 13.672 19.9708 13.5292C19.828 13.3863 19.7555 13.1904 19.6105 12.7987L19.5 12.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-    <path d="M10.5 2.5L10.3895 2.79873C10.2445 3.19044 10.172 3.38629 10.0292 3.52917C9.88629 3.67204 9.69044 3.74452 9.29873 3.88946L9 4L9.29873 4.11054C9.69044 4.25548 9.88629 4.32796 10.0292 4.47083C10.172 4.61371 10.2445 4.80956 10.3895 5.20127L10.5 5.5L10.6105 5.20127C10.7555 4.80956 10.828 4.61371 10.9708 4.47083C11.1137 4.32796 11.3096 4.25548 11.7013 4.11054L12 4L11.7013 3.88946C11.3096 3.74452 11.1137 3.67204 10.9708 3.52917C10.828 3.38629 10.7555 3.19044 10.6105 2.79873L10.5 2.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-</svg>
-                </span>
-                <div>
-                    <h2 className="font-bold text-base md:text-lg">AI Insights</h2>
-                    <p className="text-xs text-gray-400 md:text-sm">Smart analysis of your spending trends</p>
+            <div className="flex gap-2 justify-between items-center">
+                <div className="flex gap-2">
+                    <span className="px-3 py-3 bg-purple-500 rounded-lg bg-opacity-80">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width={20} height={20} fill={"none"}>
+                            <path d="M14 12.6483L16.3708 10.2775C16.6636 9.98469 16.81 9.83827 16.8883 9.68032C17.0372 9.3798 17.0372 9.02696 16.8883 8.72644C16.81 8.56849 16.6636 8.42207 16.3708 8.12923C16.0779 7.83638 15.9315 7.68996 15.7736 7.61169C15.473 7.46277 15.1202 7.46277 14.8197 7.61169C14.6617 7.68996 14.5153 7.83638 14.2225 8.12923L11.8517 10.5M14 12.6483L5.77754 20.8708C5.4847 21.1636 5.33827 21.31 5.18032 21.3883C4.8798 21.5372 4.52696 21.5372 4.22644 21.3883C4.06849 21.31 3.92207 21.1636 3.62923 20.8708C3.33639 20.5779 3.18996 20.4315 3.11169 20.2736C2.96277 19.973 2.96277 19.6202 3.11169 19.3197C3.18996 19.1617 3.33639 19.0153 3.62923 18.7225L11.8517 10.5M14 12.6483L11.8517 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                            <path d="M19.5 2.5L19.3895 2.79873C19.2445 3.19044 19.172 3.38629 19.0292 3.52917C18.8863 3.67204 18.6904 3.74452 18.2987 3.88946L18 4L18.2987 4.11054C18.6904 4.25548 18.8863 4.32796 19.0292 4.47083C19.172 4.61371 19.2445 4.80956 19.3895 5.20127L19.5 5.5L19.6105 5.20127C19.7555 4.80956 19.828 4.61371 19.9708 4.47083C20.1137 4.32796 20.3096 4.25548 20.7013 4.11054L21 4L20.7013 3.88946C20.3096 3.74452 20.1137 3.67204 19.9708 3.52917C19.828 3.38629 19.7555 3.19044 19.6105 2.79873L19.5 2.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                            <path d="M19.5 12.5L19.3895 12.7987C19.2445 13.1904 19.172 13.3863 19.0292 13.5292C18.8863 13.672 18.6904 13.7445 18.2987 13.8895L18 14L18.2987 14.1105C18.6904 14.2555 18.8863 14.328 19.0292 14.4708C19.172 14.6137 19.2445 14.8096 19.3895 15.2013L19.5 15.5L19.6105 15.2013C19.7555 14.8096 19.828 14.6137 19.9708 14.4708C20.1137 14.328 20.3096 14.2555 20.7013 14.1105L21 14L20.7013 13.8895C20.3096 13.7445 20.1137 13.672 19.9708 13.5292C19.828 13.3863 19.7555 13.1904 19.6105 12.7987L19.5 12.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                            <path d="M10.5 2.5L10.3895 2.79873C10.2445 3.19044 10.172 3.38629 10.0292 3.52917C9.88629 3.67204 9.69044 3.74452 9.29873 3.88946L9 4L9.29873 4.11054C9.69044 4.25548 9.88629 4.32796 10.0292 4.47083C10.172 4.61371 10.2445 4.80956 10.3895 5.20127L10.5 5.5L10.6105 5.20127C10.7555 4.80956 10.828 4.61371 10.9708 4.47083C11.1137 4.32796 11.3096 4.25548 11.7013 4.11054L12 4L11.7013 3.88946C11.3096 3.74452 11.1137 3.67204 10.9708 3.52917C10.828 3.38629 10.7555 3.19044 10.6105 2.79873L10.5 2.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                        </svg>
+                    </span>
+                    <div>
+                        <h2 className="font-bold text-base md:text-lg">AI Insights</h2>
+                        <p className="text-xs text-gray-400 md:text-sm">Smart analysis of your spending trends</p>
+                    </div>
                 </div>
+                {!hasInsightsToday && (
+                    <button onClick={generateAIInsights} className="bg-purple-600 text-xs sm:text-base px-3 sm:px-4 py-2 rounded-lg">Get AI Insights</button>
+                )}
+                {hasInsightsToday && (
+                    <span className="text-xs sm:text-base px-3 sm:px-4 py-2 bg-green-600 rounded-lg">Today's Insights</span>
+                )}
             </div>
 
             {loading ? (
-                <div className="w-full grid h-14 items-center justify-center"><Loader/></div>
+                <div className="w-full grid h-14 items-center justify-center"><Loader /></div>
             ) : (
                 <div className="flex flex-wrap gap-3 mt-4">
                     <div className="w-full sm:w-[49%] px-4 py-3 bg-gray-900 rounded-xl">
                         <h2 className="font-bold text-base md:text-lg">Spending Trends</h2>
-                        <p className="text-xs text-gray-400 md:text-sm">{aiInsights.spendingPattern || "No spending trends detected."}</p>
+                        <p className="text-xs text-gray-400 md:text-sm">{aiInsights.spendingTrends || "No spending trends detected."}</p>
                     </div>
                     <div className="w-full sm:w-[49%] px-4 py-3 bg-gray-900 rounded-xl">
                         <h2 className="font-bold text-base md:text-lg">Unusual Spending</h2>
@@ -161,7 +187,7 @@ const AIInsights = ({ income, month, year }) => {
                     </div>
                     <div className="w-full sm:w-[49%] px-4 py-3 bg-gray-900 rounded-xl">
                         <h2 className="font-bold text-base md:text-lg">Savings Opportunities</h2>
-                        <p className="text-xs text-gray-400 md:text-sm">{aiInsights.savingTip || "No savings insights available."}</p>
+                        <p className="text-xs text-gray-400 md:text-sm">{aiInsights.longTermSavings || "No savings insights available."}</p>
                     </div>
                     <div className="w-full sm:w-[49%] px-4 py-3 bg-gray-900 rounded-xl">
                         <h2 className="font-bold text-base md:text-lg">Predicted Expenses (Next Month)</h2>

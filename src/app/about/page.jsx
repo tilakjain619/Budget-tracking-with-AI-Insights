@@ -24,7 +24,7 @@ const About = () => {
             </p>
             <hr className='my-3 opacity-25'/>
             <p className='mt-3'>
-                🚀 <strong>Tech Stack</strong> - Next.js, MongoDB, NextAuth, Zustand (state management), and GPT-4o-mini for AI insights.
+                🚀 <strong>Tech Stack</strong> - Next.js, MongoDB, NextAuth, Zustand (state management), and GPT for AI insights.
             </p>
         </div>
     )
