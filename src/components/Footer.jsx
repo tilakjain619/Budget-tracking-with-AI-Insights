@@ -25,7 +25,7 @@ const Footer = () => {
         </ul>
       </div>
       <div className="pt-7 text-center">
-        <span className="text-sm font-normal text-gray-500">©<a href="https://pagedone.io/">smarttrack</a> 2025, All rights reserved.</span>
+        <span className="text-sm font-normal text-gray-500">© <a href="https://pagedone.io/">smarttrack</a> Since 2025, All rights reserved.</span>
       </div>
     </div>
   </footer>
